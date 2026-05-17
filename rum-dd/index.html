@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datadog RUM - Projeto de Estudo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: #ffd93d;
+            color: #333;
+        }
+
+        .btn-warning:hover {
+            background: #ffca0d;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #51cf66;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #40c057;
+            transform: translateY(-2px);
+        }
+
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .log-output {
+            background: #1e1e1e;
+            color: #51cf66;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .log-line {
+            margin: 4px 0;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status.ready {
+            background: #d3f9d8;
+            color: #2f9e44;
+        }
+
+        .status.error {
+            background: #ffe0e0;
+            color: #c92a2a;
+        }
+
+        .credentials-display {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Datadog RUM - Frontend Demo</h1>
+        <p class="subtitle">Projeto de estudo para integração com Datadog RUM</p>
+
+        <!-- Status do RUM -->
+        <div class="section">
+            <h2>Status do RUM</h2>
+            <p style="margin-bottom: 10px;">
+                <span id="rum-status" class="status error">Carregando...</span>
+            </p>
+            <div id="status-details" style="font-size: 12px; color: #666; margin-top: 10px;"></div>
+            <div class="credentials-display" id="credentials-info"></div>
+        </div>
+
+        <!-- Pageviews -->
+        <div class="section">
+            <h2>📄 Pageviews</h2>
+            <div class="info-box">
+                O pageview é capturado automaticamente ao carregar a página.
+                Clique nos botões abaixo para simular navegação.
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="navigateToPage('/')">Home</button>
+                <button class="btn-primary" onclick="navigateToPage('/products')">Produtos</button>
+                <button class="btn-primary" onclick="navigateToPage('/about')">Sobre</button>
+                <button class="btn-primary" onclick="navigateToPage('/contact')">Contato</button>
+            </div>
+        </div>
+
+        <!-- Ações do Usuário -->
+        <div class="section">
+            <h2>🖱️ Ações do Usuário</h2>
+            <div class="info-box">
+                As ações são capturadas automaticamente (cliques, inputs).
+                Use os botões abaixo para simular eventos e enviar ações customizadas.
+            </div>
+            <div class="button-group">
+                <button class="btn-success" onclick="trackCustomAction('button-click', { button: 'test', timestamp: new Date().toISOString() })">
+                    Ação Customizada
+                </button>
+                <button class="btn-success" onclick="trackCustomAction('form-submit', { form: 'demo', fields: 3 })">
+                    Form Submit
+                </button>
+            </div>
+        </div>
+
+        <!-- Erros -->
+        <div class="section">
+            <h2>❌ Erro de JavaScript</h2>
+            <div class="info-box">
+                Dispare um erro JavaScript para teste. O RUM vai capturar e enviar.
+            </div>
+            <div class="button-group">
+                <button class="btn-danger" onclick="triggerJSError()">Trigger JS Error</button>
+                <button class="btn-danger" onclick="triggerNetworkError()">Trigger Network Error</button>
+                <button class="btn-danger" onclick="triggerCustomError()">Custom Error (RUM API)</button>
+            </div>
+        </div>
+
+        <!-- XHR / Fetch -->
+        <div class="section">
+            <h2>🔗 Requisições (XHR/Fetch)</h2>
+            <div class="info-box">
+                O RUM monitora automaticamente requisições XHR e Fetch.
+                Clique nos botões para fazer requisições de teste.
+            </div>
+            <div class="button-group">
+                <button class="btn-warning" onclick="makeFetchRequest('/api/users')">
+                    Fetch Sucesso
+                </button>
+                <button class="btn-warning" onclick="makeFetchRequest('/api/invalid')">
+                    Fetch Erro 404
+                </button>
+                <button class="btn-warning" onclick="makeSlowRequest()">
+                    Fetch Lento
+                </button>
+            </div>
+        </div>
+
+        <!-- User Context -->
+        <div class="section">
+            <h2>👤 Contexto do Usuário</h2>
+            <div class="info-box">
+                Defina informações do usuário para associar ao RUM.
+            </div>
+            <label>ID do Usuário:</label>
+            <input type="text" id="user-id" placeholder="Ex: user-123" value="user-demo-001">
+            
+            <label>Email:</label>
+            <input type="text" id="user-email" placeholder="Ex: user@example.com" value="user@example.com">
+
+            <label>Nome:</label>
+            <input type="text" id="user-name" placeholder="Ex: Nome do Usuário" value="Demo User">
+
+            <button class="btn-primary" onclick="setUserContext()">Definir Contexto</button>
+        </div>
+
+        <!-- Global Context -->
+        <div class="section">
+            <h2>🌍 Contexto Global</h2>
+            <div class="info-box">
+                Adicione atributos customizados ao contexto global do RUM.
+            </div>
+            <label>Chave:</label>
+            <input type="text" id="context-key" placeholder="Ex: environment">
+            
+            <label>Valor:</label>
+            <input type="text" id="context-value" placeholder="Ex: production">
+
+            <button class="btn-primary" onclick="addGlobalContext()">Adicionar ao Contexto</button>
+        </div>
+
+        <!-- Log de Eventos -->
+        <div class="section">
+            <h2>📋 Log de Eventos</h2>
+            <button class="btn-warning" onclick="clearLogs()" style="margin-bottom: 10px;">Limpar Logs</button>
+            <div class="log-output" id="logs"></div>
+        </div>
+
+        <!-- Código de Configuração -->
+        <div class="section">
+            <h2>💻 Código de Inicialização</h2>
+            <div class="code-block">
+&lt;!-- Datadog Browser SDK (via CDN) --&gt;
+&lt;script 
+  src="https://www.datadoghq-browser-agent.com/datadog-rum-v4.js"
+  type="text/javascript"
+&gt;&lt;/script&gt;
+
+&lt;script&gt;
+window.DD_RUM.init({
+  applicationId: '',
+  clientToken: '',
+  site: 'datadoghq.com',
+  service: 'app-frontend',
+  env: 'development',
+  version: '1.0.0',
+  sessionSampleRate: 100,
+  sessionReplaySampleRate: 100,
+  trackUserInteractions: true,
+  trackResources: true,
+  trackLongTasks: true,
+  defaultPrivacyLevel: 'mask-user-input'
+});
+
+window.DD_RUM.startSessionReplayRecording();
+&lt;/script&gt;
+            </div>
+        </div>
+    </div>
+
+    <!-- Datadog Browser SDK -->
+    <script src="https://www.datadoghq-browser-agent.com/datadog-rum-v4.js" type="text/javascript"></script>
+
+    <!-- Script de Inicialização e Lógica -->
+    <script>
+        // ===== CREDENCIAIS DO DATADOG =====
+        // Substitua pelos seus próprios valores obtidos em:
+        // https://app.datadoghq.com/rum/application/create
+        const DD_CONFIG = {
+            applicationId: 'YOUR_APPLICATION_ID',
+            clientToken: 'YOUR_CLIENT_TOKEN',
+            site: 'datadoghq.com',
+            service: 'my-frontend-app',
+            env: 'development',
+            version: '1.0.0'
+        };
+
+        // ===== INICIALIZAÇÃO DO RUM =====
+        function initializeRUM() {
+            try {
+                window.DD_RUM.init({
+                    applicationId: DD_CONFIG.applicationId,
+                    clientToken: DD_CONFIG.clientToken,
+                    site: DD_CONFIG.site,
+                    service: DD_CONFIG.service,
+                    env: DD_CONFIG.env,
+                    version: DD_CONFIG.version,
+                    sessionSampleRate: 100,
+                    sessionReplaySampleRate: 100,
+                    trackUserInteractions: true,
+                    trackResources: true,
+                    trackLongTasks: true,
+                    defaultPrivacyLevel: 'mask-user-input'
+                });
+
+                window.DD_RUM.startSessionReplayRecording();
+
+                addLog('✅ RUM inicializado com sucesso');
+                addLog(`📊 Application: ${DD_CONFIG.service}`);
+                addLog(`🌍 Site: ${DD_CONFIG.site}`);
+                addLog(`🔗 Env: ${DD_CONFIG.env}`);
+                
+                updateStatus('ready', '✅ RUM Pronto');
+                displayCredentials();
+            } catch (error) {
+                updateStatus('error', `❌ Erro ao inicializar RUM: ${error.message}`);
+                addLog(`❌ Erro: ${error.message}`);
+            }
+        }
+
+        // ===== FUNÇÕES DE STATUS =====
+        function updateStatus(type, message) {
+            const statusEl = document.getElementById('rum-status');
+            const detailsEl = document.getElementById('status-details');
+            
+            statusEl.className = `status ${type}`;
+            statusEl.textContent = message;
+            
+            if (type === 'ready') {
+                detailsEl.innerHTML = `
+                    <strong>✅ Sessão RUM Ativa</strong><br>
+                    Todos os eventos estão sendo capturados e enviados para Datadog.<br>
+                    <strong>Session ID:</strong> <span id="session-id">carregando...</span>
+                `;
+                setTimeout(() => {
+                    if (window.DD_RUM && window.DD_RUM.getSessionId) {
+                        const sessionId = window.DD_RUM.getSessionId();
+                        document.getElementById('session-id').textContent = sessionId || 'não disponível';
+                    }
+                }, 1000);
+            }
+        }
+
+        function displayCredentials() {
+            const credEl = document.getElementById('credentials-info');
+            credEl.innerHTML = `
+                <strong>📋 Credenciais Configuradas:</strong><br>
+                Application ID: ${DD_CONFIG.applicationId}<br>
+                Client Token: ${DD_CONFIG.clientToken}<br>
+                Site: ${DD_CONFIG.site}
+            `;
+        }
+
+        // ===== FUNÇÕES DE LOGGING =====
+        function addLog(message) {
+            const logsEl = document.getElementById('logs');
+            const logLine = document.createElement('div');
+            logLine.className = 'log-line';
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+            logLine.textContent = `[${timestamp}] ${message}`;
+            logsEl.appendChild(logLine);
+            logsEl.scrollTop = logsEl.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            addLog('🗑️ Logs limpos');
+        }
+
+        // ===== PAGEVIEWS =====
+        function navigateToPage(path) {
+            addLog(`📄 Navegando para: ${path}`);
+            
+            if (window.DD_RUM) {
+                window.DD_RUM.addAction('navigation', {
+                    path: path,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        }
+
+        // ===== AÇÕES DO USUÁRIO =====
+        function trackCustomAction(actionName, context) {
+            addLog(`🎯 Ação rastreada: ${actionName}`);
+            
+            if (window.DD_RUM) {
+                window.DD_RUM.addAction(actionName, context);
+            }
+        }
+
+        // ===== ERROS =====
+        function triggerJSError() {
+            addLog('⚠️ Disparando erro JavaScript...');
+            try {
+                throw new Error('Erro de teste do JavaScript');
+            } catch (error) {
+                if (window.DD_RUM) {
+                    window.DD_RUM.addError(error);
+                }
+                addLog(`❌ Erro capturado: ${error.message}`);
+            }
+        }
+
+        function triggerNetworkError() {
+            addLog('⚠️ Simulando erro de rede...');
+            makeFetchRequest('/api/error');
+        }
+
+        function triggerCustomError() {
+            addLog('⚠️ Enviando erro customizado para RUM...');
+            if (window.DD_RUM) {
+                window.DD_RUM.addError(new Error('Erro customizado do usuário'), {
+                    errorSource: 'custom',
+                    errorMessage: 'Isso é um erro de teste'
+                });
+            }
+        }
+
+        // ===== REQUISIÇÕES HTTP =====
+        function makeFetchRequest(url) {
+            addLog(`🔗 Fetch iniciado: ${url}`);
+            
+            fetch(url)
+                .then(response => {
+                    addLog(`✅ Resposta: ${response.status} ${response.statusText}`);
+                    return response.text();
+                })
+                .catch(error => {
+                    addLog(`❌ Erro na requisição: ${error.message}`);
+                });
+        }
+
+        function makeSlowRequest() {
+            addLog('⏱️ Requisição lenta iniciada (3s)...');
+            
+            fetch('/api/slow', {
+                signal: AbortSignal.timeout(3000)
+            })
+                .then(() => addLog('✅ Requisição lenta concluída'))
+                .catch(error => addLog(`⚠️ Timeout: ${error.message}`));
+        }
+
+        // ===== CONTEXTO DO USUÁRIO =====
+        function setUserContext() {
+            const userId = document.getElementById('user-id').value;
+            const userEmail = document.getElementById('user-email').value;
+            const userName = document.getElementById('user-name').value;
+
+            if (window.DD_RUM && window.DD_RUM.setUser) {
+                window.DD_RUM.setUser({
+                    id: userId,
+                    email: userEmail,
+                    name: userName
+                });
+                addLog(`👤 Contexto do usuário definido: ${userName} (${userEmail})`);
+            }
+        }
+
+        // ===== CONTEXTO GLOBAL =====
+        function addGlobalContext() {
+            const key = document.getElementById('context-key').value;
+            const value = document.getElementById('context-value').value;
+
+            if (!key || !value) {
+                addLog('⚠️ Chave e valor são obrigatórios');
+                return;
+            }
+
+            if (window.DD_RUM) {
+                const context = {};
+                context[key] = value;
+                window.DD_RUM.addUserAction('custom_context', context);
+                addLog(`🌍 Contexto adicionado: ${key} = ${value}`);
+            }
+        }
+
+        // ===== INICIALIZAÇÃO NA CARGA DA PÁGINA =====
+        window.addEventListener('DOMContentLoaded', () => {
+            addLog('🚀 Página carregada');
+            
+            // Aguardar um pouco para garantir que o SDK está disponível
+            setTimeout(() => {
+                if (window.DD_RUM) {
+                    initializeRUM();
+                } else {
+                    updateStatus('error', '❌ SDK do Datadog não carregou');
+                    addLog('❌ Falha ao carregar o SDK do Datadog');
+                }
+            }, 500);
+        });
+
+        // Simular API para testes de requisição
+        window.addEventListener('beforeunload', () => {
+            addLog('👋 Saindo da página');
+        });
+    </script>
+</body>
+</html>

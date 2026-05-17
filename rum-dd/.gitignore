@@ -1,0 +1,20 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Docker / runtime
+.env
+.env.local
+.env.*.local
+
+# Arquivos de credenciais (caso queira separar a config sensível)
+config.local.js
+secrets.json

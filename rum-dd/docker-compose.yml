@@ -1,0 +1,20 @@
+services:
+  rum-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: datadog-rum-app
+    ports:
+      - "8080:80"
+    environment:
+      - TZ=America/Sao_Paulo
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    restart: unless-stopped
+    networks:
+      - rum-network
+
+networks:
+  rum-network:
+    driver: bridge
